@@ -1,7 +1,10 @@
-from cookbook.ingredients.models import Category, Ingredient
 from graphene import Boolean, Field, Node, Mutation, ObjectType, String
 from graphene_django.filter import DjangoFilterConnectionField
+from graphene_django.forms.mutation import DjangoModelFormMutation
 from graphene_django.types import DjangoObjectType
+
+from cookbook.ingredients.forms import CategoryForm
+from cookbook.ingredients.models import Category, Ingredient
 
 
 # Graphene will automatically map the Category model's fields onto the CategoryNode.
@@ -76,6 +79,12 @@ class CategoryCreate(Mutation):
 
 
 # django model form mutation
+class CategoryMutation(DjangoModelFormMutation):
+    category = Field(CategoryNode)
+
+    class Meta:
+        form_class = CategoryForm
+
 
 # drf model serializer mutation
 
@@ -84,3 +93,29 @@ class CategoryCreate(Mutation):
 # small combination
 class Mutations(ObjectType):
     category_create = CategoryCreate.Field()
+    """
+    query part
+    mutation xxx ($formInput: CategoryMutationInput!){
+        categoryCreate(name: "Frozen") {
+            created
+            category {
+                id
+                name
+            }
+        }
+        categoryFormCreate(input: $formInput) {
+            category {
+                id
+                name
+            }
+        }
+    }
+    variables part
+    {
+        "formInput":{
+        "name": "Staple"
+        }  
+    }
+    """
+    category_form_create = CategoryMutation.Field()
+    category_form_update = CategoryMutation.Field()

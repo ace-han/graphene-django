@@ -1,16 +1,26 @@
-import cookbook.ingredients.schema
-import cookbook.recipes.schema
 import graphene
+from cookbook.ingredients.schema import (
+    Queries as IngredientQueries,
+    Mutations as IngredientMutations,
+)
+from cookbook.recipes.schema import (
+    Queries as RecipeQueries,
+    Mutations as RecipeMutations,
+)
 
 from graphene_django.debug import DjangoDebug
 
 
 class Query(
-    cookbook.ingredients.schema.Query,
-    cookbook.recipes.schema.Query,
-    graphene.ObjectType,
+    IngredientQueries, RecipeQueries, graphene.ObjectType,
 ):
     debug = graphene.Field(DjangoDebug, name="_debug")
 
 
-schema = graphene.Schema(query=Query)
+class Mutation(
+    IngredientMutations, graphene.ObjectType,
+):
+    debug = graphene.Field(DjangoDebug, name="_debug")
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation)

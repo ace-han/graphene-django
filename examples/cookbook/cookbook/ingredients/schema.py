@@ -1,6 +1,8 @@
 from graphene import Argument, Boolean, Field, ID, Node, Mutation, ObjectType, String
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.forms.mutation import DjangoModelFormMutation
+
+# from graphene_django.rest_framework.mutation import SerializerMutation
 from graphene_django.types import DjangoObjectType
 
 from cookbook.ingredients.forms import CategoryForm
@@ -87,7 +89,12 @@ class CategoryCreate(Mutation):
 
 
 # django model form mutation
-class CategoryMutation(DjangoModelFormMutation):
+class CategoryFormMutation(DjangoModelFormMutation):
+    """
+    DjangoModelFormMutation supports no DELETE mutation,
+    so we will have to do a delete mutation manually
+    """
+
     category = Field(CategoryNode)
 
     class Meta:
@@ -95,6 +102,9 @@ class CategoryMutation(DjangoModelFormMutation):
 
 
 # drf model serializer mutation
+# class CategorySerializerMutation(SerializerMutation):
+#     pass
+
 
 # bulk
 
@@ -125,5 +135,28 @@ class Mutations(ObjectType):
         }  
     }
     """
-    category_form_create = CategoryMutation.Field()
-    category_form_update = CategoryMutation.Field()
+    category_form_create = CategoryFormMutation.Field()
+    """
+    query part
+    mutation xxx($formInput: CategoryFormMutationInput!) {
+        categoryFormUpdate (input: $formInput){
+            category {
+                id
+                name
+            }
+        }
+    }
+    variables part
+    {
+        "formInput": {
+            // pk not global_id
+            // refer to
+            // https://github.com/graphql-python/graphene-django/issues/867
+            // https://github.com/graphql-python/graphene-django/issues/728
+            "id": 5, 
+            "name": "Staple"
+        }
+    }
+    """
+    category_form_update = CategoryFormMutation.Field()
+

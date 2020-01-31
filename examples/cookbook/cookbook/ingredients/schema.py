@@ -1,4 +1,4 @@
-from graphene import Boolean, Field, Node, Mutation, ObjectType, String
+from graphene import Argument, Boolean, Field, ID, Node, Mutation, ObjectType, String
 from graphene_django.filter import DjangoFilterConnectionField
 from graphene_django.forms.mutation import DjangoModelFormMutation
 from graphene_django.types import DjangoObjectType
@@ -30,10 +30,18 @@ class IngredientNode(DjangoObjectType):
 
 
 class Queries(ObjectType):
-    category = Field(CategoryNode)
+    # without id resolver
+    # category = Field(CategoryNode)
+    # without `graphene.relay.node#Node.node_resolver`
+    # category = Field(
+    #     CategoryNode,
+    #     id=Argument(ID, required=True, description="ID of the category."),
+    #     description="Look up a category by ID.",
+    # )
+    category = Node.Field(CategoryNode)
     all_categories = DjangoFilterConnectionField(CategoryNode)
 
-    ingredient = Field(IngredientNode)
+    ingredient = Node.Field(IngredientNode)
     all_ingredients = DjangoFilterConnectionField(IngredientNode)
 
 

@@ -1,36 +1,10 @@
-from graphene import Argument, Boolean, Field, ID, Node, Mutation, ObjectType, String
+from graphene import Node, ObjectType
 from graphene_django.filter import DjangoFilterConnectionField
-from graphene_django.forms.mutation import DjangoModelFormMutation
+from cookbook.ingredients.mutations import CategoryCreate, CategoryFormMutation
+from cookbook.ingredients.types import CategoryNode, IngredientNode
+
 
 # from graphene_django.rest_framework.mutation import SerializerMutation
-from graphene_django.types import DjangoObjectType
-
-from cookbook.ingredients.forms import CategoryForm
-from cookbook.ingredients.models import Category, Ingredient
-
-
-# Graphene will automatically map the Category model's fields onto the CategoryNode.
-# This is configured in the CategoryNode's Meta class (as you can see below)
-class CategoryNode(DjangoObjectType):
-    class Meta:
-        model = Category
-        interfaces = (Node,)
-        filter_fields = ["name", "ingredients"]
-
-
-class IngredientNode(DjangoObjectType):
-    class Meta:
-        model = Ingredient
-        # Allow for some more advanced filtering here
-        interfaces = (Node,)
-        filter_fields = {
-            "name": ["exact", "icontains", "istartswith"],
-            "notes": ["exact", "icontains"],
-            "category": ["exact"],
-            "category__name": ["exact"],
-        }
-
-
 class Queries(ObjectType):
     # without id resolver
     # category = Field(CategoryNode)
@@ -47,68 +21,6 @@ class Queries(ObjectType):
     all_ingredients = DjangoFilterConnectionField(IngredientNode)
 
 
-# simple mutation
-class CategoryCreate(Mutation):
-    """
-    mutation {
-        categoryCreate(name: "Condiment") {
-            created
-            category {
-                id
-                name
-            }
-        },
-        _debug {
-            sql {
-                rawSql,
-                sql,
-                vendor
-            }
-        }
-    }
-    """
-
-    # The class attributes define the response of the mutation
-    created = Boolean()
-    category = Field(CategoryNode)
-
-    class Arguments:
-        # The input arguments for this mutation
-        name = String(required=True)
-
-    @classmethod
-    def mutate(cls, root, info, **kwargs):
-        # some discussion not resolved at the time of writing
-        # refer to
-        # https://docs.graphene-python.org/en/latest/types/objecttypes/#resolver-parameters
-        # https://github.com/graphql-python/graphene/issues/810
-        # stick with classmethod for the time being
-        name = kwargs.get("name", "")
-        obj, created = Category.objects.get_or_create(name=name)
-        return cls(created=created, category=obj)
-
-
-# django model form mutation
-class CategoryFormMutation(DjangoModelFormMutation):
-    """
-    DjangoModelFormMutation supports no DELETE mutation,
-    so we will have to do a delete mutation manually
-    """
-
-    category = Field(CategoryNode)
-
-    class Meta:
-        form_class = CategoryForm
-
-
-# drf model serializer mutation
-# class CategorySerializerMutation(SerializerMutation):
-#     pass
-
-
-# bulk
-
-# small combination
 class Mutations(ObjectType):
     category_create = CategoryCreate.Field()
     """

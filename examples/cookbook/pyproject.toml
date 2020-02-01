@@ -11,6 +11,7 @@ graphene-django = "^2.8.0"
 graphql-core = ">=2.1rc1"
 django = "==3.0"
 django-filter = ">=2"
+djangorestframework = "^3.11.0"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^19.10b0", allow-prereleases = true}

@@ -106,8 +106,6 @@ class CategoryFormMutation(DjangoModelFormMutation):
     so we will have to do a delete mutation manually
     """
 
-    category = Field(CategoryNode)
-
     class Meta:
         form_class = CategoryForm
 

@@ -1,6 +1,12 @@
 from graphene import Node, ObjectType
 from graphene_django.filter import DjangoFilterConnectionField
-from cookbook.ingredients.mutations import CategoryCreate, CategoryFormMutation
+from cookbook.ingredients.mutations import (
+    CategoryCreate,
+    CategoryFormMutation,
+    IngredientSerializerMutation,
+    BulkIngredientUpdate,
+    AtomicBulkIngredientUpdate,
+)
 from cookbook.ingredients.types import CategoryNode, IngredientNode
 
 
@@ -71,4 +77,31 @@ class Mutations(ObjectType):
     }
     """
     category_form_update = CategoryFormMutation.Field()
+    """
+    query part 
+    mutation yyy ($input1: IngredientSerializerMutationInput!) {
+        ingredientSerializerCreate (input: $input1){
+            id
+            name
+            notes
+            category
+            categoryObj {   // `xxxObj` for a nested detail
+                id
+                name
+            }
+        }
+    }
+    variables part
+    {
+        "input1":{
+            "name": "Sugar",
+            "notes": "Sugar notes",
+            "category": "3" // String type!!!
+        }
+    }
+    """
+    ingredient_serializer_create = IngredientSerializerMutation.Field()
+    ingredient_serializer_update = IngredientSerializerMutation.Field()
+    ingredient_bulk_update = BulkIngredientUpdate.Field()
+    ingredient_atomic_bulk_update = AtomicBulkIngredientUpdate.Field()
 

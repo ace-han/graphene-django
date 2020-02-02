@@ -1,4 +1,4 @@
-from graphene import Boolean, Field, ID, List, Mutation, String
+from graphene import Boolean, Field, ID, Int, List, Mutation, NonNull, String
 from graphene.relay.node import Node
 from graphene.types.inputobjecttype import InputObjectType
 from graphene_django.forms.mutation import DjangoModelFormMutation
@@ -16,7 +16,10 @@ class IngredientMutationInput(InputObjectType):
     # no more required for partial update
     name = String()
     notes = String()
-    category_id = ID()
+    # validation in `graphql.type.GraphQLID.parse_value->(coerce_string)` 
+    # category_id = ID()
+    # validation in `graphql.type.GraphQLInt.parse_value->(coerce_int)` 
+    category_id = Int()
 
 
 # simple mutation
@@ -62,7 +65,10 @@ class CategoryCreate(Mutation):
 
 class BulkIngredientUpdate(Mutation):
     class Input:
-        ingredients = List(IngredientMutationInput)
+        # [IngredientMutationInput]!
+        # ingredients = List(IngredientMutationInput, required=True)
+        # [IngredientMutationInput!]
+        ingredients = List(NonNull(IngredientMutationInput))
 
     ingredients = List(IngredientNode)
 
@@ -80,7 +86,10 @@ class BulkIngredientUpdate(Mutation):
 
 class AtomicBulkIngredientUpdate(Mutation):
     class Input:
-        ingredients = List(IngredientMutationInput)
+        # [IngredientMutationInput]!
+        # ingredients = List(IngredientMutationInput, required=True)
+        # [IngredientMutationInput!]
+        ingredients = List(NonNull(IngredientMutationInput))
 
     ingredients = List(IngredientNode)
 
@@ -88,15 +97,18 @@ class AtomicBulkIngredientUpdate(Mutation):
     def mutate(cls, root, info, **kwargs):
         ingredients = kwargs.get("ingredients")
         objs = []
+        pks = []
         fields = ("name", "category_id")
         for ingredient_dict in ingredients:
             _, pk = Node.from_global_id(ingredient_dict.pop("id", "_:missing"))
             obj = Ingredient.objects.get(id=pk)
-            for field in fields:
-                setattr(obj, field, ingredient_dict[field])
-            objs.append(pk)
+            for field, value in ingredient_dict.items():
+                setattr(obj, field, value)
+            objs.append(obj)
+            pks.append(pk)
         Ingredient.objects.bulk_update(objs, fields)
-        return cls(ingredients=objs)
+        result = Ingredient.objects.filter(id__in=pks)
+        return cls(ingredients=result)
 
 
 # django model form mutation

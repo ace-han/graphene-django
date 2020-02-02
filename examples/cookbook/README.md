@@ -62,3 +62,53 @@ Now head on over to
 and run some queries!
 (See the [Graphene-Django Tutorial](http://docs.graphene-python.org/projects/django/en/latest/tutorial-plain/#testing-our-graphql-schema)
 for some example queries)
+
+
+# Some project testing points
+Mutation Creation (naming pattern *Create)    
+    Single creation    
+        Condiment id = 3    
+    Batch creation in one request    
+        Category (though two mutations in a request, executed one by one)    
+            Frozen    
+            Staple    
+        Ingredient (Atomic Bulk operation is better in plain graphene.List    (graphene.InputObjectType))    
+            Salt pk = 5    
+            Sugar pk = 6    
+            Peanut Oil pk=7    
+            Soy Sauce pk=8    
+            Ginger    
+            Garlic    
+            Coriander    
+            Dumplings    
+            Rice    
+Query    
+    nested *_to_1    
+        allIngredients showing category names    
+    nested *_to_n    
+        allRecipes showing ingredient names    
+        allRecipes with first 2 ingredients whose name starts with an S    
+
+Filtering    
+    standard scalar filter    
+        query Ingredient by name stuff    
+    custom scalar filter    
+        query Category by len(name) > n    
+    standard related filter    
+        query Ingredient by Category name _icontains, _exact    
+    custom related filter    
+        query Category by ingredient_count > n    
+
+Mutation Update (naming pattern *Update)    
+    standard update     
+        Ingredient notes to anything    
+    custom update with related -- invalid scenarios    
+
+Mutation Delete (naming pattern *Delete)    
+    create XXX ingredient, delete it afterwards    
+
+Transaction test    
+    update mutation with two queries one pk id, one global id    
+        (each query is individual)    
+    
+    Atomic bulk mutation should be better in plain     

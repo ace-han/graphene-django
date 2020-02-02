@@ -1,3 +1,4 @@
+from django.db.transaction import atomic
 from graphene import Boolean, Field, ID, Int, List, Mutation, NonNull, String
 from graphene.relay.node import Node
 from graphene.types.inputobjecttype import InputObjectType
@@ -16,9 +17,9 @@ class IngredientMutationInput(InputObjectType):
     # no more required for partial update
     name = String()
     notes = String()
-    # validation in `graphql.type.GraphQLID.parse_value->(coerce_string)` 
+    # validation in `graphql.type.GraphQLID.parse_value->(coerce_string)`
     # category_id = ID()
-    # validation in `graphql.type.GraphQLInt.parse_value->(coerce_int)` 
+    # validation in `graphql.type.GraphQLInt.parse_value->(coerce_int)`
     category_id = Int()
 
 
@@ -93,22 +94,37 @@ class AtomicBulkIngredientUpdate(Mutation):
 
     ingredients = List(IngredientNode)
 
+    # @classmethod
+    # def mutate(cls, root, info, **kwargs):
+    #     ingredients = kwargs.get("ingredients")
+    #     objs = []
+    #     pks = []
+    #     fields = ("name", "category_id")
+    #     for ingredient_dict in ingredients:
+    #         _, pk = Node.from_global_id(ingredient_dict.pop("id", "_:missing"))
+    #         obj = Ingredient.objects.get(id=pk)
+    #         for field, value in ingredient_dict.items():
+    #             setattr(obj, field, value)
+    #         objs.append(obj)
+    #         pks.append(pk)
+    #     Ingredient.objects.bulk_update(objs, fields)
+    #     result = Ingredient.objects.filter(id__in=pks)
+    #     return cls(ingredients=result)
+
     @classmethod
     def mutate(cls, root, info, **kwargs):
         ingredients = kwargs.get("ingredients")
-        objs = []
-        pks = []
-        fields = ("name", "category_id")
-        for ingredient_dict in ingredients:
-            _, pk = Node.from_global_id(ingredient_dict.pop("id", "_:missing"))
-            obj = Ingredient.objects.get(id=pk)
-            for field, value in ingredient_dict.items():
-                setattr(obj, field, value)
-            objs.append(obj)
-            pks.append(pk)
-        Ingredient.objects.bulk_update(objs, fields)
-        result = Ingredient.objects.filter(id__in=pks)
-        return cls(ingredients=result)
+        ids = []
+        # transaction for the time being
+        # refer to
+        # https://github.com/graphql-python/graphene-django/issues/835
+        with atomic():
+            for ingredient_dict in ingredients:
+                _, pk = Node.from_global_id(ingredient_dict.pop("id", "_:missing"))
+                Ingredient.objects.filter(id=pk).update(**ingredient_dict)
+                ids.append(pk)
+        qs = Ingredient.objects.filter(id__in=ids)
+        return cls(ingredients=qs)
 
 
 # django model form mutation
@@ -196,11 +212,51 @@ variables part
 
 """
 2. single-field, array-inputs in one request
-
-
-"""
-
-"""
 3. atomic single-field, array-inputs in one request
+client requests are the same, need server side do the transaction control
+
+query part
+mutation yyy ($ingredients: [IngredientMutationInput!]) {
+	ingredientBulkUpdate (ingredients: $ingredients) {
+	    ingredients {
+        id
+      	name
+        notes
+        category {
+          id
+          name
+        }
+      }
+    }
+	ingredientAtomicBulkUpdate (ingredients: $ingredients) {
+	    ingredients {
+        id
+      	name
+        notes
+        category {
+          id
+          name
+        }
+      }
+    }
+}
+
+variables part
+{
+  "ingredients": [
+    {
+      "id": "SW5ncmVkaWVudE5vZGU6NQ==",
+      "name": "Salt1",
+      "notes": "Salt1 notes",
+      "categoryId": 3
+    },
+    {
+      "id": "SW5ncmVkaWVudE5vZGU6Ng==",
+      "name": "Sugar1",
+      "notes": "Sugar1 notes",
+      "categoryId": "Q2F0ZWdvcnlOb2RlOjM="
+    }
+  ]
+}
 """
 

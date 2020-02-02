@@ -28,6 +28,11 @@ class Queries(ObjectType):
 
 
 class Mutations(ObjectType):
+    """
+        it seems that using pure graphene-django other than 
+        `django form` and `djangorestframework serializer` is more flexible
+    """
+
     category_create = CategoryCreate.Field()
     """
     query part
@@ -78,6 +83,7 @@ class Mutations(ObjectType):
     """
     category_form_update = CategoryFormMutation.Field()
     """
+    not like the 
     query part 
     mutation yyy ($input1: IngredientSerializerMutationInput!) {
         ingredientSerializerCreate (input: $input1){
@@ -102,6 +108,52 @@ class Mutations(ObjectType):
     """
     ingredient_serializer_create = IngredientSerializerMutation.Field()
     ingredient_serializer_update = IngredientSerializerMutation.Field()
+
+    """
+    query part
+    mutation yyy ($ingredients: [IngredientMutationInput!]) {
+        ingredientBulkUpdate (ingredients: $ingredients) {
+            ingredients {
+            id
+            name
+            notes
+            category {
+            id
+            name
+            }
+        }
+        }
+        ingredientAtomicBulkUpdate (ingredients: $ingredients) {
+            ingredients {
+            id
+            name
+            notes
+            category {
+            id
+            name
+            }
+        }
+        }
+    }
+
+    variables part
+    {
+    "ingredients": [
+        {
+        "id": "SW5ncmVkaWVudE5vZGU6NQ==",
+        "name": "Salt1",
+        "notes": "Salt1 notes",
+        "categoryId": 3
+        },
+        {
+        "id": "SW5ncmVkaWVudE5vZGU6Ng==",
+        "name": "Sugar1",
+        "notes": "Sugar1 notes",
+        "categoryId": "Q2F0ZWdvcnlOb2RlOjM="
+        }
+    ]
+    }
+    """
     ingredient_bulk_update = BulkIngredientUpdate.Field()
     ingredient_atomic_bulk_update = AtomicBulkIngredientUpdate.Field()
 

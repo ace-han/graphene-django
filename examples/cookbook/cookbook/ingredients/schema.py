@@ -40,6 +40,21 @@ class Queries(ObjectType):
     }
     """
     """
+    custom scalar filter
+    query {
+        allIngredients(
+            name_Icontains: "g", 
+            nameLenGt: 4,
+            first: 3, 
+            orderBy: "-name") {
+            edges {
+                node {
+                    id
+                    name
+                }
+            }
+        }
+    }
 
     """
     all_ingredients = DjangoFilterConnectionField(
@@ -134,25 +149,25 @@ class Mutations(ObjectType):
     mutation yyy ($ingredients: [IngredientMutationInput!]) {
         ingredientBulkUpdate (ingredients: $ingredients) {
             ingredients {
-            id
-            name
-            notes
-            category {
-            id
-            name
+                id
+                name
+                notes
+                category {
+                    id
+                    name
+                }
             }
-        }
         }
         ingredientAtomicBulkUpdate (ingredients: $ingredients) {
             ingredients {
-            id
-            name
-            notes
-            category {
-            id
-            name
+                id
+                name
+                notes
+                category {
+                    id
+                    name
+                }
             }
-        }
         }
     }
 
@@ -160,16 +175,16 @@ class Mutations(ObjectType):
     {
     "ingredients": [
         {
-        "id": "SW5ncmVkaWVudE5vZGU6NQ==",
-        "name": "Salt1",
-        "notes": "Salt1 notes",
-        "categoryId": 3
+            "id": "SW5ncmVkaWVudE5vZGU6NQ==",
+            "name": "Salt1",
+            "notes": "Salt1 notes",
+            "categoryId": 3
         },
         {
-        "id": "SW5ncmVkaWVudE5vZGU6Ng==",
-        "name": "Sugar1",
-        "notes": "Sugar1 notes",
-        "categoryId": "Q2F0ZWdvcnlOb2RlOjM="
+            "id": "SW5ncmVkaWVudE5vZGU6Ng==",
+            "name": "Sugar1",
+            "notes": "Sugar1 notes",
+            "categoryId": "Q2F0ZWdvcnlOb2RlOjM="
         }
     ]
     }

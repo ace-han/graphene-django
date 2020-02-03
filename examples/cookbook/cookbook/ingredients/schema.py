@@ -1,5 +1,7 @@
 from graphene import Node, ObjectType
 from graphene_django.filter import DjangoFilterConnectionField
+
+from cookbook.ingredients.filtersets import IngredientFilterSet
 from cookbook.ingredients.mutations import (
     CategoryCreate,
     CategoryFormMutation,
@@ -24,7 +26,25 @@ class Queries(ObjectType):
     all_categories = DjangoFilterConnectionField(CategoryNode)
 
     ingredient = Node.Field(IngredientNode)
-    all_ingredients = DjangoFilterConnectionField(IngredientNode)
+    """
+    standard scalar filter
+    query {
+        allIngredients(name_Icontains: "g", first: 3, orderBy: "-name") {
+            edges {
+                node {
+                    id
+                    name
+                }
+            }
+        }
+    }
+    """
+    """
+
+    """
+    all_ingredients = DjangoFilterConnectionField(
+        IngredientNode, filterset_class=IngredientFilterSet
+    )
 
 
 class Mutations(ObjectType):

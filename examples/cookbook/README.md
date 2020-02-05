@@ -111,4 +111,145 @@ Transaction test
     update mutation with two queries one pk id, one global id    
         (each query is individual)    
     
-    Atomic bulk mutation should be better in plain     
+Atomic bulk mutation should be better in plain  
+
+
+
+# graphql comments
+graphene_django
+
+view with csrf_exempt to ease the trouble on csrf_token on client side in the project
+
+graphql POST will get all the structure back for autocomplete
+
+
+how to deprecated a field
+how specify query arguments
+what's input fields
+
+why relay Node just id required?
+(by default in relay, single object should be retrieved only by id from list api?)
+
+what's input fields
+
+
+
+Connection
+what
+    connnection is a cursor-based pagination
+how
+    in Facebook GraphQL internal example or API Specification 
+why
+    avoid unstable pagination common use scenarios
+
+connection => n edges + pageInfo + totalCount
+
+edge => cursor(id)+node other props
+an edge can have props like `joined_at` many_to_many relationship descriptive props
+
+While query fields are executed in parallel, mutation fields run in series, one after the other.
+
+
+
+seems like client side specs
+Fragments are more like macros, usually used in client
+Variables are sth relevant with Fragments
+
+Operation Name?
+    query HeroNameAndFriends {
+        hero {
+            name
+            friends {
+            name
+            }
+        }
+    }
+
+query type: query
+operation name: HeroNameAndFriends
+(what's it for operation name)? 
+(take it as a group name for a chunk of operations, easy debugging or tracing logs)
+
+Directives (@include(if: Boolean), @skip(if: Boolean))
+    a way to dynamically change the structure and the shape (For UX experience)
+
+Inline Fragments (add extra fields to diff Type)
+    query HeroForEpisode($ep: Episode!) {
+        hero(episode: $ep) {
+            name
+            ... on Droid {
+            primaryFunction
+            }
+            ... on Human {
+            height
+            }
+        }
+    }
+
+
+Fragment that displays necessary fields on a concret object type
+named
+{
+  hero {
+    name
+    ...DroidFields
+  }
+}
+
+fragment DroidFields on Droid {
+  primaryFunction
+}
+inline
+{
+  hero {
+    name
+    ... on Droid {
+      primaryFunction
+    }
+  }
+}
+
+
+few meta fields
+    __typename
+
+
+Execution 
+    piece by piece, level by level, Promises/Futures/Tasks
+
+
+
+Mutation vs ClientIDMutation(Maybe something to deal with client bulk requests feature #TODO)
+    Relay ClientIDMutation accept a clientIDMutation argument. 
+    This argument is also sent back to the client with the mutation result (you do not have to do anything)
+
+Authentication and Authorization in GraphQL (and how GraphQL-Modules can help)
+
+_debug to see the raw sql
+
+
+
+query
+    nested *_to_1 is simply no edges description
+    nested *_to_n query
+        seems just nested connections with `edges>node`
+
+filter
+    standard scalar filter
+    custom scalar filter
+    standard related filter
+    custom related filter
+
+mutation
+    create
+    standard update 
+    custom update with related
+    delete?
+
+auth? permission saleor using mutation 
+    class Meta:
+        permissions = [...]
+    cls.check_permissions()
+
+
+
